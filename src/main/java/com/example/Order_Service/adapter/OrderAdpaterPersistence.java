@@ -3,10 +3,11 @@ package com.example.Order_Service.adapter;
 import com.example.Order_Service.Domains.infrastructure.JpaOrderRepository;
 import com.example.Order_Service.Domains.model.Order;
 import com.example.Order_Service.Domains.port.OutputPort.SaveOrderPort;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
-
+@Component
 public class OrderAdpaterPersistence implements SaveOrderPort {
     private final JpaOrderRepository orderRepository;
 
