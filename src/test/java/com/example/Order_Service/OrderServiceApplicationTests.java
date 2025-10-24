@@ -3,6 +3,7 @@ package com.example.Order_Service;
 import com.example.Order_Service.Domains.model.Order;
 import com.example.Order_Service.Domains.model.OrderItems;
 import com.example.Order_Service.Domains.model.OrderStatus;
+import com.example.Order_Service.Domains.port.OutputPort.SaveOrderEvent;
 import com.example.Order_Service.Domains.port.OutputPort.SaveOrderPort;
 import com.example.Order_Service.services.OrderService;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +29,8 @@ class OrderServiceApplicationTests {
     @BeforeEach
     void setup() {
         saveOrderPort = mock(SaveOrderPort.class);
-        orderService = new OrderService(saveOrderPort);
+        SaveOrderEvent saveOrderEvent = mock(SaveOrderEvent.class);
+        orderService = new OrderService(saveOrderPort,saveOrderEvent);
     }
     @Test
     void testPlaceOrder_ShouldCalculateTotalPriceAndSaveOrder() {

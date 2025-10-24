@@ -1,10 +1,10 @@
 package com.example.Order_Service.Domains.model;
 
 import jakarta.persistence.*;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+
 @Entity
 @Table(name = "orders")
 public class Order {
@@ -21,8 +21,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status = OrderStatus.PLACED;
 
-    @ElementCollection
-    @CollectionTable(name = "order_items", joinColumns = @JoinColumn(name = "order_id"))
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItems> items = new ArrayList<>();
 
     @Column(name = "total_price")
@@ -31,19 +30,26 @@ public class Order {
     @Column(name = "created_at")
     private Instant createdAt = Instant.now();
 
-    public void setCustomerId(Long customerId){
-        this.customerId=customerId;
+    // --- Getters and Setters ---
+
+    public Long getId() {
+        return id;
     }
-    public Long getCustomerId(){
+
+    public Long getCustomerId() {
         return customerId;
     }
 
-    public void setItems(List<OrderItems> items) {
-        this.items = items;
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
     }
 
-    public List<OrderItems> getItems() {
-        return items;
+    public Long getVendorId() {
+        return vendorId;
+    }
+
+    public void setVendorId(Long vendorId) {
+        this.vendorId = vendorId;
     }
 
     public OrderStatus getStatus() {
@@ -54,12 +60,16 @@ public class Order {
         this.status = status;
     }
 
-    public Long getVendorId() {
-        return vendorId;
+    public List<OrderItems> getItems() {
+        return items;
     }
 
-    public void setVendorId(Long vendorId) {
-        this.vendorId = vendorId;
+    // ✅ Keep only this version
+    public void setItems(List<OrderItems> items) {
+        this.items = items;
+        if (items != null) {
+            items.forEach(i -> i.setOrder(this)); // set reverse link
+        }
     }
 
     public double getTotalPrice() {

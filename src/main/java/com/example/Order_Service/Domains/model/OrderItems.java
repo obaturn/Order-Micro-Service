@@ -2,41 +2,67 @@ package com.example.Order_Service.Domains.model;
 
 import jakarta.persistence.*;
 
-
 @Entity
 @Table(name = "order_items")
 public class OrderItems {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long productId;
-    private String name; // snapshot of product name
+    private Long id; // internal DB ID
+
+    @Column(name = "product_id")
+    private Long productId; // actual product reference
+
+    private String name;
     private int quantity;
     private double unitPrice;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
 
-    public void setProductId(Long productId){
-        this.productId=productId;
+    // --- Getters & Setters ---
+
+    public Long getId() {
+        return id;
     }
-    public Long getProductId(){
+
+    public Long getProductId() {
         return productId;
     }
-    public void setName(String name){
-        this.name=name;
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
-    public String getName(){
+
+    public String getName() {
         return name;
     }
-    public void setQuantity(int quantity){
-        this.quantity=quantity;
+
+    public void setName(String name) {
+        this.name = name;
     }
-    public int getQuantity(){
+
+    public int getQuantity() {
         return quantity;
     }
-    public void setUnitPrice(double unitPrice){
-        this.unitPrice=unitPrice;
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
     public double getUnitPrice() {
         return unitPrice;
+    }
+
+    public void setUnitPrice(double unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
     }
 }

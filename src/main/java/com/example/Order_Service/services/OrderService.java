@@ -3,7 +3,9 @@ package com.example.Order_Service.services;
 import com.example.Order_Service.Domains.model.Order;
 import com.example.Order_Service.Domains.model.OrderStatus;
 import com.example.Order_Service.Domains.port.InputPort.OrderUseCase;
+import com.example.Order_Service.Domains.port.OutputPort.SaveOrderEvent;
 import com.example.Order_Service.Domains.port.OutputPort.SaveOrderPort;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,12 +13,15 @@ import java.util.List;
 @Service
 public class OrderService implements OrderUseCase {
     private final SaveOrderPort saveOrderPort;
+    private final SaveOrderEvent saveOrderEvent;
 
-    public OrderService(SaveOrderPort saveOrderPort) {
+    public OrderService(SaveOrderPort saveOrderPort, SaveOrderEvent saveOrderEvent) {
         this.saveOrderPort = saveOrderPort;
+        this.saveOrderEvent = saveOrderEvent;
     }
 
     @Override
+    @Transactional
     public Order placeOrder(Order order) {
         double total = order.getItems().stream()
                 .mapToDouble(item-> item.getUnitPrice() * item.getQuantity())
@@ -24,15 +29,26 @@ public class OrderService implements OrderUseCase {
         order.setTotalPrice(total);
         order.setStatus(OrderStatus.PLACED);
         order.setCreatedAt(java.time.Instant.now());
-        return saveOrderPort.save(order);
+        Order savedOrder = saveOrderPort.save(order);
+
+        // Save the outbox event
+        saveOrderEvent.saveEvent(savedOrder, "Order", "OrderPlaced");
+
+        return savedOrder;
+
     }
 
     @Override
+    @Transactional
     public void updateOrderStatus(Long orderId, OrderStatus status) {
         var existingOrder = saveOrderPort.findById(orderId)
                 .orElseThrow(()->new RuntimeException("Order Not Found"));
         existingOrder.setStatus(status);
-        saveOrderPort.save(existingOrder);
+        Order updatedOrder = saveOrderPort.save(existingOrder);
+
+        // Save the outbox event
+        saveOrderEvent.saveEvent(updatedOrder, "Order", "OrderUpdated");
+
 
     }
 
